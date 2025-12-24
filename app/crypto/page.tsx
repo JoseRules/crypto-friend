@@ -32,6 +32,7 @@ async function getStaticData() {
       'Accept': 'application/json'
     }
   })
+  console.log(res);
   if (!res.ok) {
     console.log('Failed to fetch data');
     return [];
