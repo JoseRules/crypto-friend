@@ -25,7 +25,7 @@ type Repo = {
 }
 
 async function getStaticData() {
-  const res = await fetch('https://api.binance.com/api/v3/ticker/24hr', {
+  const res = await fetch('https://data.binance.com/api/v3/ticker/24hr', {
     cache: 'no-store',
     headers: {
       'User-Agent': 'Mozilla/5.0',
