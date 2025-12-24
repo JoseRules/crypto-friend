@@ -33,7 +33,7 @@ export async function getCoinDetail(baseSymbol: string) {
 
   try {
     const res = await fetch(
-      `https://data.binance.com/api/v3/ticker/24hr?symbol=${symbol}`,
+      `https://api-gcp.binance.com/api/v3/ticker/24hr?symbol=${symbol}`,
       { next: { revalidate: 60 } }
     )
 
