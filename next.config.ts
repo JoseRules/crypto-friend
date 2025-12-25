@@ -8,8 +8,13 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'bin.bnbstatic.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'coin-images.coingecko.com',
+      },
     ],
-  },
+  }, 
 };
+
 
 export default nextConfig;

@@ -14,31 +14,31 @@ type IntervalConfig = {
 const INTERVALS: Record<string, IntervalConfig> = {
   '1d': {
     label: '1 Day',
-    interval: '1h',
+    interval: '1',
     limit: 24,
     timeFormat: 'hour'
   },
   '7d': {
     label: '7 Days',
-    interval: '4h',
-    limit: 42, // 7 days * 6 intervals per day
+    interval: '7',
+    limit: 42,
     timeFormat: 'day'
   },
   '1m': {
     label: '1 Month',
-    interval: '1d',
+    interval: '30',
     limit: 30,
     timeFormat: 'day'
   },
   '3m': {
     label: '3 Months',
-    interval: '1d',
+    interval: '90',
     limit: 90,
     timeFormat: 'day'
   },
   '1y': {
     label: '1 Year',
-    interval: '1w',
+    interval: '365',
     limit: 52,
     timeFormat: 'week'
   }
@@ -46,12 +46,14 @@ const INTERVALS: Record<string, IntervalConfig> = {
 
 interface ChartWithIntervalsProps {
   baseSymbol: string;
+  coinGeckoId: string;
   isPositive: boolean;
   initialKlines: KlineData[];
 }
 
 export default function ChartWithIntervals({ 
   baseSymbol, 
+  coinGeckoId,
   isPositive, 
   initialKlines 
 }: ChartWithIntervalsProps) {
@@ -60,19 +62,46 @@ export default function ChartWithIntervals({
   const [loading, setLoading] = useState(false);
 
   const fetchKlines = async (intervalKey: string) => {
+    if (!coinGeckoId) return;
+    
     setLoading(true);
     try {
       const config = INTERVALS[intervalKey];
-      const symbol = `${baseSymbol}USDT`;
+      const days = parseInt(config.interval);
       
       const res = await fetch(
-        `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${config.interval}&limit=${config.limit}`
+        `https://api.coingecko.com/api/v3/coins/${coinGeckoId}/market_chart?vs_currency=usd&days=${days}`
       );
       
       if (!res.ok) throw new Error('Failed to fetch klines');
       
       const data = await res.json();
-      setKlines(data);
+      const prices = data.prices || [];
+      
+      // Convert CoinGecko format to our KlineData format
+      const convertedKlines: KlineData[] = prices.map((price: [number, number], index: number) => {
+        const [timestamp, priceValue] = price;
+        const nextPrice = prices[index + 1]?.[1] || priceValue;
+        const high = Math.max(priceValue, nextPrice);
+        const low = Math.min(priceValue, nextPrice);
+        
+        return [
+          timestamp,
+          priceValue.toString(),
+          high.toString(),
+          low.toString(),
+          priceValue.toString(),
+          '0',
+          timestamp,
+          '0',
+          0,
+          '0',
+          '0',
+          '0'
+        ] as KlineData;
+      });
+      
+      setKlines(convertedKlines);
     } catch (error) {
       console.error('Error fetching klines:', error);
     } finally {

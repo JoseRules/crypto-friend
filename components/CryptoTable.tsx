@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { COIN_NAMES } from '@/utils/coins';
 
 type Repo = {
   symbol: string;
+  name: string;
   priceChange: string;
   priceChangePercent: string;
   weightedAvgPrice: string;
@@ -27,6 +27,8 @@ type Repo = {
   firstId: number;    
   lastId: number;
   count: number;
+  coinGeckoId?: string;
+  image?: string;
 };
 
 interface CryptoTableProps {
@@ -49,8 +51,8 @@ export default function CryptoTable({ data }: CryptoTableProps) {
   const filteredData = data.filter((item) => {
     if (!searchTerm) return true;
     
-    const symbol = item.symbol.replace('USDT', '').toLowerCase();
-    const coinName = (COIN_NAMES[symbol.toUpperCase()] || symbol).toLowerCase();
+    const symbol = item.symbol.toLowerCase();
+    const coinName = item.name.toLowerCase();
     const searchLower = searchTerm.toLowerCase();
     
     return symbol.includes(searchLower) || coinName.includes(searchLower);
@@ -64,16 +66,14 @@ export default function CryptoTable({ data }: CryptoTableProps) {
 
     switch (sortColumn) {
       case 'name': {
-        const symbolA = a.symbol.replace('USDT', '');
-        const symbolB = b.symbol.replace('USDT', '');
-        const nameA = (COIN_NAMES[symbolA.toUpperCase()] || symbolA).toLowerCase();
-        const nameB = (COIN_NAMES[symbolB.toUpperCase()] || symbolB).toLowerCase();
+        const nameA = a.name.toLowerCase();
+        const nameB = b.name.toLowerCase();
         comparison = nameA.localeCompare(nameB);
         break;
       }
       case 'symbol': {
-        const symbolA = a.symbol.replace('USDT', '').toLowerCase();
-        const symbolB = b.symbol.replace('USDT', '').toLowerCase();
+        const symbolA = a.symbol.toLowerCase();
+        const symbolB = b.symbol.toLowerCase();
         comparison = symbolA.localeCompare(symbolB);
         break;
       }
@@ -154,6 +154,11 @@ export default function CryptoTable({ data }: CryptoTableProps) {
     if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
     if (num >= 1e3) return `$${(num / 1e3).toFixed(2)}K`;
     return `$${num.toFixed(2)}`;
+  };
+
+  const truncateName = (name: string, maxLength: number = 12): string => {
+    if (name.length <= maxLength) return name;
+    return name.substring(0, maxLength) + '...';
   };
 
   // Generate page numbers to display
@@ -247,7 +252,7 @@ export default function CryptoTable({ data }: CryptoTableProps) {
       {/* Table */}
       <div className="w-full max-w-6xl bg-foreground rounded-lg p-2 sm:p-6 overflow-visible">
         <div className="min-w-full">
-          <table className="w-full border-collapse">
+          <table className="w-full border-collapse table-fixed sm:table-auto">
             {/* Desktop Header */}
             <thead className="hidden sm:table-header-group">
               <tr className="border-b border-foreground/30">
@@ -301,13 +306,13 @@ export default function CryptoTable({ data }: CryptoTableProps) {
             {/* Mobile Header */}
             <thead className="table-header-group sm:hidden">
               <tr className="border-b border-foreground/30">
-                <th className="text-left py-2 px-3 text-primary font-semibold text-xs">Coin</th>
-                <th className="text-right py-2 px-3 text-primary font-semibold text-xs">Price</th>
+                <th className="text-left py-2 px-2 text-primary font-semibold text-xs w-[60%]">Coin</th>
+                <th className="text-right py-2 px-2 text-primary font-semibold text-xs w-[40%]">Price</th>
               </tr>
             </thead>
             <tbody>
               {currentData.map((item: Repo) => {
-                const symbol = item.symbol.replace('USDT', '');
+                const symbol = item.symbol;
                 const priceChange = parseFloat(item.priceChangePercent);
                 const isPositive = priceChange >= 0;
                 
@@ -321,15 +326,15 @@ export default function CryptoTable({ data }: CryptoTableProps) {
                     <td className="hidden sm:table-cell py-4 px-4">
                       <div className="flex items-center gap-3">
                         <Image 
-                          alt={`${COIN_NAMES[symbol] || symbol} logo`}
+                          alt={`${item.name} logo`}
                           width={24}
                           height={24}
                           loading="lazy"
-                          src={`https://bin.bnbstatic.com/static/assets/logos/${symbol}.png`}
+                          src={item.image || `https://assets.coingecko.com/coins/images/1/small/bitcoin.png`}
                           className="flex-shrink-0 h-6 w-6"
                         />
                         <span className="text-primary font-medium text-sm sm:text-base whitespace-nowrap">
-                          {COIN_NAMES[symbol] || symbol}
+                          {item.name}
                         </span>
                       </div>
                     </td>
@@ -361,32 +366,32 @@ export default function CryptoTable({ data }: CryptoTableProps) {
                     </td>
                     
                     {/* Mobile: Combined Name/Symbol Column */}
-                    <td className="table-cell sm:hidden py-3 px-3">
-                      <div className="flex items-center gap-2">
+                    <td className="table-cell sm:hidden py-2.5 px-2">
+                      <div className="flex items-center gap-1.5">
                         <Image 
-                          alt={`${COIN_NAMES[symbol] || symbol} logo`}
-                          width={32}
-                          height={32}
+                          alt={`${item.name} logo`}
+                          width={28}
+                          height={28}
                           loading="lazy"
-                          src={`https://bin.bnbstatic.com/static/assets/logos/${symbol}.png`}
-                          className="flex-shrink-0 h-8 w-8"
+                          src={item.image || `https://assets.coingecko.com/coins/images/1/small/bitcoin.png`}
+                          className="flex-shrink-0 h-7 w-7"
                         />
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-primary font-semibold text-sm truncate">
-                            {COIN_NAMES[symbol] || symbol}
+                        <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+                          <span className="text-primary font-semibold text-xs leading-tight">
+                            {truncateName(item.name, 12)}
                           </span>
-                          <span className="text-secondary text-xs font-medium">{symbol}</span>
+                          <span className="text-secondary text-[10px] font-medium leading-tight truncate">{symbol}</span>
                         </div>
                       </div>
                     </td>
                     {/* Mobile: Combined Price/Price Change Column */}
-                    <td className="table-cell sm:hidden py-3 px-3 text-right">
+                    <td className="table-cell sm:hidden py-2.5 px-2 text-right">
                       <div className="flex flex-col items-end">
-                        <span className="text-primary font-semibold text-sm">
+                        <span className="text-primary font-semibold text-xs leading-tight">
                           ${formatPrice(item.lastPrice)}
                         </span>
                         <span 
-                          className={`text-xs font-semibold ${
+                          className={`text-[10px] font-semibold leading-tight ${
                             isPositive ? 'text-success' : 'text-danger'
                           }`}
                         >
