@@ -1,7 +1,6 @@
 'use client';
 
 import Link from "next/link";
-import { COIN_NAMES } from "@/utils/coins";
 
 interface CoinErrorPageProps {
   baseSymbol: string;
@@ -10,7 +9,7 @@ interface CoinErrorPageProps {
 
 export default function CoinErrorPage({ baseSymbol, error }: CoinErrorPageProps) {
   const isCoinNotFound = error.message === 'COIN_NOT_FOUND';
-  const coinName = COIN_NAMES[baseSymbol] || baseSymbol;
+  const coinName = baseSymbol;
 
   return (
     <div className="min-h-screen bg-background">
