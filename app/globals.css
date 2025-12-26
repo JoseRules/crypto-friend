@@ -3,7 +3,7 @@
 :root {
   --background: #ffffff;
   --accent: #193cb8;
-  --foreground: #cdcdcd;
+  --foreground: #f0f0f0;
   --primary: #090909;
   --button-text: #eeeeee;
   --secondary: #616161;
@@ -39,7 +39,7 @@
   :root:not([data-theme]) {
     --background: #ffffff;
     --accent: #193cb8;
-    --foreground: #fdfdfd;
+    --foreground: #f0f0f0;
     --primary: #090909;
     --button-text: #eeeeee;
     --secondary: #616161;

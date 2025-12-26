@@ -62,7 +62,7 @@ export default function ChartWithIntervals({
   const [loading, setLoading] = useState(false);
 
   const fetchKlines = async (intervalKey: string) => {
-    if (!coinGeckoId) return;
+    if (!coinGeckoId || !baseSymbol) return;
     
     setLoading(true);
     try {
@@ -70,37 +70,12 @@ export default function ChartWithIntervals({
       const days = parseInt(config.interval);
       
       const res = await fetch(
-        `https://api.coingecko.com/api/v3/coins/${coinGeckoId}/market_chart?vs_currency=usd&days=${days}`
+        `/api/crypto/${baseSymbol}/klines?days=${days}`
       );
       
       if (!res.ok) throw new Error('Failed to fetch klines');
       
-      const data = await res.json();
-      const prices = data.prices || [];
-      
-      // Convert CoinGecko format to our KlineData format
-      const convertedKlines: KlineData[] = prices.map((price: [number, number], index: number) => {
-        const [timestamp, priceValue] = price;
-        const nextPrice = prices[index + 1]?.[1] || priceValue;
-        const high = Math.max(priceValue, nextPrice);
-        const low = Math.min(priceValue, nextPrice);
-        
-        return [
-          timestamp,
-          priceValue.toString(),
-          high.toString(),
-          low.toString(),
-          priceValue.toString(),
-          '0',
-          timestamp,
-          '0',
-          0,
-          '0',
-          '0',
-          '0'
-        ] as KlineData;
-      });
-      
+      const convertedKlines: KlineData[] = await res.json();
       setKlines(convertedKlines);
     } catch (error) {
       console.error('Error fetching klines:', error);
@@ -119,7 +94,7 @@ export default function ChartWithIntervals({
 
   return (
     <div>
-      {/* Interval Selection Buttons */}
+      {/* Interval Buttons */}
       <div className="flex flex-wrap gap-2 mb-4">
         {Object.entries(INTERVALS).map(([key, config]) => (
           <button
@@ -141,7 +116,7 @@ export default function ChartWithIntervals({
       <div className="w-full h-64 sm:h-96 bg-background rounded-lg border border-foreground/20 p-4">
         {loading ? (
           <div className="w-full h-full flex items-center justify-center">
-            <p className="text-secondary text-sm sm:text-base">Loading chart data...</p>
+            <p className="text-primary text-sm sm:text-base">Loading chart data...</p>
           </div>
         ) : (
           <PriceChart 

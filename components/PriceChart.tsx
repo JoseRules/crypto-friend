@@ -34,7 +34,6 @@ export default function PriceChart({ klines, isPositive, timeFormat = 'hour' }: 
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    // Check current theme
     const theme = document.documentElement.getAttribute('data-theme');
     setIsDark(theme === 'dark');
     
@@ -57,7 +56,7 @@ export default function PriceChart({ klines, isPositive, timeFormat = 'hour' }: 
   const dangerColor = isDark ? '#7d230d' : '#9c2e1f';
   const lineColor = isPositive ? successColor : dangerColor;
 
-  // Format time based on interval
+  // Format time according to the interval
   const formatTime = (timestamp: number): string => {
     const date = new Date(timestamp);
     
@@ -93,7 +92,7 @@ export default function PriceChart({ klines, isPositive, timeFormat = 'hour' }: 
     }
   };
 
-  // Transform klines data for the chart
+  // Transform klines
   const chartData: ChartDataPoint[] = klines.map((kline) => {
     const closeTime = kline[6];
     
@@ -126,7 +125,7 @@ export default function PriceChart({ klines, isPositive, timeFormat = 'hour' }: 
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+      <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }} className="text-primary">
         <CartesianGrid strokeDasharray="3 3" stroke="currentColor" strokeOpacity={0.1} />
         <XAxis 
           dataKey="time" 

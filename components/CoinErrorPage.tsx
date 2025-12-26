@@ -1,5 +1,7 @@
 'use client';
 
+import Alert from "@/assets/icons/Alert";
+import ArrowLeft from "@/assets/icons/ArrowLeft";
 import Link from "next/link";
 
 interface CoinErrorPageProps {
@@ -19,26 +21,14 @@ export default function CoinErrorPage({ baseSymbol, error }: CoinErrorPageProps)
           href="/crypto"
           className="text-accent hover:text-accent/80 transition-colors mb-4 sm:mb-6 inline-flex items-center gap-2 text-sm sm:text-base self-start"
         >
-          ← Back to Crypto List
+         <ArrowLeft className="w-4 h-4" />
+         Back to Crypto List
         </Link>
 
         {/* Error Card */}
         <div className="w-full bg-foreground rounded-lg p-6 sm:p-8 flex flex-col items-center justify-center text-center">
           <div className="mb-6">
-            <svg
-              className="w-16 h-16 sm:w-20 sm:h-20 text-danger mx-auto"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
+            <Alert className="w-16 h-16 sm:w-20 sm:h-20 text-danger mx-auto" />
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-3">
