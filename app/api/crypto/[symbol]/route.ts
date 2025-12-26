@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getCoinGeckoIdFromSymbol, getCoinGeckoId } from '@/utils/coingecko';
 
 type CoinDetail = {
@@ -25,8 +25,8 @@ type CoinDetail = {
 };
 
 export async function GET(
-  request: Request,
-  { params }: { params: { symbol: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ symbol: string }> }
 ) {
   try {
     const { symbol } = await params;
