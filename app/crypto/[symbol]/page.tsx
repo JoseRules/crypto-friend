@@ -7,7 +7,8 @@ import { CoinDetail, KlineData } from "@/types/ui";
 
 export async function getCoinDetail(baseSymbol: string) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (typeof window === 'undefined' ? 'http://localhost:3000' : '');
+    // Use relative URL for server-side fetch - Next.js handles this automatically in production
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
     const res = await fetch(`${baseUrl}/api/crypto/${baseSymbol}`, {
       next: { revalidate: 60 }
     });
@@ -35,7 +36,8 @@ export async function getKlines(
   days: number = 1
 ): Promise<KlineData[]> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (typeof window === 'undefined' ? 'http://localhost:3000' : '');
+    // Use relative URL for server-side fetch - Next.js handles this automatically in production
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
     const res = await fetch(`${baseUrl}/api/crypto/${baseSymbol}/klines?days=${days}`, {
       next: { revalidate: 60 }
     });
