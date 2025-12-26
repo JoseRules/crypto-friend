@@ -1,8 +1,5 @@
-// Helper function to get CoinGecko ID from symbol
-// CoinGecko uses lowercase IDs like "bitcoin", "ethereum"
 export async function getCoinGeckoId(symbol: string): Promise<string | null> {
   try {
-    // Get coin list to find ID by symbol
     const coinListRes = await fetch(
       'https://api.coingecko.com/api/v3/coins/list',
       { next: { revalidate: 3600 } }
@@ -13,7 +10,6 @@ export async function getCoinGeckoId(symbol: string): Promise<string | null> {
     const coinList = await coinListRes.json();
     const symbolLower = symbol.toLowerCase();
     
-    // Find coin by symbol (case-insensitive)
     const coin = coinList.find((c: any) => 
       c.symbol.toLowerCase() === symbolLower
     );
@@ -25,7 +21,6 @@ export async function getCoinGeckoId(symbol: string): Promise<string | null> {
   }
 }
 
-// Common symbol to CoinGecko ID mapping for faster lookups
 const SYMBOL_TO_ID_MAP: Record<string, string> = {
   'BTC': 'bitcoin',
   'ETH': 'ethereum',

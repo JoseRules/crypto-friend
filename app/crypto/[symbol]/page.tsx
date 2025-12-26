@@ -2,88 +2,25 @@ import Image from "next/image";
 import Link from "next/link";
 import ChartWithIntervals from "@/components/ChartWithIntervals";
 import CoinErrorPage from "@/components/CoinErrorPage";
-import { getCoinGeckoIdFromSymbol, getCoinGeckoId } from "@/utils/coingecko";
-
-type CoinDetail = {
-  name: string;
-  askPrice: string; 
-  askQty: string;
-  bidPrice: string;
-  bidQty: string;
-  closeTime: number;
-  count: number;
-  firstId: number;
-  highPrice: string;
-  lastId: number;
-  lastPrice: string;
-  lastQty: string;
-  lowPrice: string;
-  openPrice: string;
-  openTime: number;
-  prevClosePrice: string;
-  priceChange: string;
-  priceChangePercent: string;
-  quoteVolume: string;
-  symbol: string;
-  volume: string;
-  weightedAvgPrice: string;
-  image?: string;
-}
+import ArrowLeft from "@/assets/icons/ArrowLeft";
+import { CoinDetail, KlineData } from "@/types/ui";
 
 export async function getCoinDetail(baseSymbol: string) {
   try {
-    // Get CoinGecko ID from symbol
-    let coinGeckoId = getCoinGeckoIdFromSymbol(baseSymbol);
-    if (!coinGeckoId) {
-      coinGeckoId = await getCoinGeckoId(baseSymbol);
-    }
-    
-    if (!coinGeckoId) {
-      throw new Error('COIN_NOT_FOUND');
-    }
-
-    const res = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${coinGeckoId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`,
-      { next: { revalidate: 60 } }
-    )
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (typeof window === 'undefined' ? 'http://localhost:3000' : '');
+    const res = await fetch(`${baseUrl}/api/crypto/${baseSymbol}`, {
+      next: { revalidate: 60 }
+    });
 
     if (!res.ok) {
-      if (res.status === 404) {
+      const errorData = await res.json().catch(() => ({}));
+      if (res.status === 404 || errorData.error === 'COIN_NOT_FOUND') {
         throw new Error('COIN_NOT_FOUND');
       }
-      throw new Error('FETCH_ERROR');
+      throw new Error('NETWORK_ERROR');
     }
 
-    const coinGeckoData = await res.json();
-    const marketData = coinGeckoData.market_data;
-    
-    // Map CoinGecko data to our CoinDetail structure
-    const coinDetail: CoinDetail = {
-      name: coinGeckoData.name || baseSymbol,
-      askPrice: marketData.current_price?.usd?.toString() || '0',
-      askQty: '0',
-      bidPrice: marketData.current_price?.usd?.toString() || '0',
-      bidQty: '0',
-      closeTime: Date.now(),
-      count: 0,
-      firstId: 0,
-      highPrice: marketData.high_24h?.usd?.toString() || '0',
-      lastId: 0,
-      lastPrice: marketData.current_price?.usd?.toString() || '0',
-      lastQty: '0',
-      lowPrice: marketData.low_24h?.usd?.toString() || '0',
-      openPrice: marketData.current_price?.usd?.toString() || '0',
-      openTime: Date.now() - 86400000,
-      prevClosePrice: (marketData.current_price?.usd - (marketData.price_change_24h || 0))?.toString() || '0',
-      priceChange: marketData.price_change_24h?.toString() || '0',
-      priceChangePercent: marketData.price_change_percentage_24h?.toFixed(2) || '0',
-      quoteVolume: marketData.total_volume?.usd?.toString() || '0',
-      symbol: baseSymbol,
-      volume: marketData.total_volume?.usd?.toString() || '0',
-      weightedAvgPrice: marketData.current_price?.usd?.toString() || '0',
-      image: coinGeckoData.image?.large || coinGeckoData.image?.small || '',
-    };
-
+    const coinDetail: CoinDetail = await res.json();
     return coinDetail;
   } catch (error) {
     if (error instanceof Error && error.message === 'COIN_NOT_FOUND') {
@@ -93,76 +30,25 @@ export async function getCoinDetail(baseSymbol: string) {
   }
 }
 
-type KlineData = [
-  number,    // Open time
-  string,    // Open
-  string,    // High
-  string,    // Low
-  string,    // Close
-  string,    // Volume
-  number,    // Close time
-  string,    // Quote asset volume
-  number,    // Number of trades
-  string,    // Taker buy base asset volume
-  string,    // Taker buy quote asset volume
-  string     // Ignore
-];
-
 export async function getKlines(
   baseSymbol: string,
   days: number = 1
 ): Promise<KlineData[]> {
   try {
-    // Get CoinGecko ID from symbol
-    let coinGeckoId = getCoinGeckoIdFromSymbol(baseSymbol);
-    if (!coinGeckoId) {
-      coinGeckoId = await getCoinGeckoId(baseSymbol);
-    }
-    
-    if (!coinGeckoId) {
-      throw new Error('COIN_NOT_FOUND');
-    }
-
-    const res = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${coinGeckoId}/market_chart?vs_currency=usd&days=${days}`,
-      { next: { revalidate: 60 } }
-    )
-
-    if (!res.ok) {
-      if (res.status === 404) {
-        throw new Error('COIN_NOT_FOUND');
-      }
-      throw new Error('FETCH_ERROR');
-    }
-
-    const data = await res.json();
-    const prices = data.prices || [];
-    
-    // Convert CoinGecko format to our KlineData format
-    // CoinGecko: [[timestamp, price], ...]
-    // Our format: [openTime, open, high, low, close, volume, closeTime, ...]
-    const klines: KlineData[] = prices.map((price: [number, number], index: number) => {
-      const [timestamp, priceValue] = price;
-      const nextPrice = prices[index + 1]?.[1] || priceValue;
-      const high = Math.max(priceValue, nextPrice);
-      const low = Math.min(priceValue, nextPrice);
-      
-      return [
-        timestamp,                    // Open time
-        priceValue.toString(),        // Open
-        high.toString(),              // High
-        low.toString(),               // Low
-        priceValue.toString(),        // Close
-        '0',                          // Volume (not available in market_chart)
-        timestamp,                    // Close time
-        '0',                          // Quote asset volume
-        0,                            // Number of trades
-        '0',                          // Taker buy base asset volume
-        '0',                          // Taker buy quote asset volume
-        '0'                           // Ignore
-      ] as KlineData;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (typeof window === 'undefined' ? 'http://localhost:3000' : '');
+    const res = await fetch(`${baseUrl}/api/crypto/${baseSymbol}/klines?days=${days}`, {
+      next: { revalidate: 60 }
     });
 
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      if (res.status === 404 || errorData.error === 'COIN_NOT_FOUND') {
+        throw new Error('COIN_NOT_FOUND');
+      }
+      throw new Error('NETWORK_ERROR');
+    }
+
+    const klines: KlineData[] = await res.json();
     return klines;
   } catch (error) {
     if (error instanceof Error && error.message === 'COIN_NOT_FOUND') {
@@ -182,13 +68,8 @@ export default async function CryptoSymbol({ params }: { params: { symbol: strin
   let error: Error | null = null;
 
   try {
-    // Get CoinGecko ID first
-    coinGeckoId = getCoinGeckoIdFromSymbol(baseSymbol);
-    if (!coinGeckoId) {
-      coinGeckoId = await getCoinGeckoId(baseSymbol);
-    }
-    
     coin = await getCoinDetail(baseSymbol);
+    coinGeckoId = coin.coinGeckoId || null;
     klines = await getKlines(baseSymbol, 1);
   } catch (err) {
     error = err instanceof Error ? err : new Error('Unknown error');
@@ -223,7 +104,8 @@ export default async function CryptoSymbol({ params }: { params: { symbol: strin
           href="/crypto"
           className="text-accent hover:text-accent/80 transition-colors mb-4 sm:mb-6 inline-flex items-center gap-2 text-sm sm:text-base"
         >
-          ← Back to Crypto List
+          <ArrowLeft className="w-4 h-4" />
+          Back to Crypto List
         </Link>
 
         {/* Coin Header */}

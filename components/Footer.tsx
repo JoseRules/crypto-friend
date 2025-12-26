@@ -17,17 +17,17 @@ export default function Footer() {
           <nav>
             <ul className="flex items-center gap-4 sm:gap-6 text-sm">
               <li>
-                <a href="/" className="text-foreground hover:text-accent transition-colors">
+                <a href="/" className="text-secondary hover:text-accent transition-colors hover:font-bold cursor-pointer">
                   Home
                 </a>
               </li>
               <li>
-                <a href="/about" className="text-foreground hover:text-accent transition-colors">
+                <a href="/about" className="text-secondary hover:text-accent transition-colors hover:font-bold cursor-pointer">
                   About
                 </a>
               </li>
               <li>
-                <a href="/contact" className="text-foreground hover:text-accent transition-colors">
+                <a href="/contact" className="text-secondary hover:text-accent transition-colors hover:font-bold cursor-pointer">
                   Contact
                 </a>
               </li>

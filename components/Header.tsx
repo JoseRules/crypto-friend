@@ -1,8 +1,7 @@
 'use client';
 
+import Link from "next/link";
 import Logo from "@/assets/icons/Logo";
-import Moon from "@/assets/icons/Moon";
-import Sun from "@/assets/icons/Sun";
 import { ThemeIcon } from "@/assets/icons/Theme";
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -12,10 +11,10 @@ export default function Header() {
   return (
     <header className="flex items-center justify-between sticky top-0 z-50 bg-background p-4">
 
-      <div className="flex items-center gap-2">
+      <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer">
         <Logo width={24} height={24} className="text-accent" />
         <h1 className="text-accent text-2xl font-bold">Crypto Friend</h1>
-      </div>
+      </Link>
 
       <button
         onClick={toggleTheme}
