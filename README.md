@@ -143,6 +143,10 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 ### APIs
 - **[CoinGecko API](https://www.coingecko.com/en/api)** - Cryptocurrency market data
 
+---
+
+## 📋 Dev Explanation
+
 ## Explanation:
 - There is an API Route to get the details for the chart (/api/crypto/[symbol]/klines/route.ts) which is being used by component ChartWithIntervals
 The rest of the API calls are being done directly by Server Components
