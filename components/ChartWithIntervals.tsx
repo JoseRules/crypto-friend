@@ -69,7 +69,6 @@ export default function ChartWithIntervals({
       const config = INTERVALS[intervalKey];
       const days = parseInt(config.interval);
       
-      // Add timeout for client-side fetch
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
       
@@ -95,20 +94,16 @@ export default function ChartWithIntervals({
         throw new Error('Invalid response format from server');
       }
       
-      // Validate data structure
       if (!Array.isArray(convertedKlines) || convertedKlines.length === 0) {
         console.warn(`No klines data received for ${baseSymbol} (${config.label})`);
-        // Keep existing klines instead of clearing
         return;
       }
       
       setKlines(convertedKlines);
     } catch (error) {
-      // Handle different error types gracefully
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
           console.error(`Request timeout while fetching klines for ${baseSymbol}`);
-          // Show user-friendly message - could add toast notification here
         } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
           console.error(`Network error fetching klines for ${baseSymbol}:`, error.message);
         } else {
@@ -117,7 +112,6 @@ export default function ChartWithIntervals({
       } else {
         console.error('Unknown error fetching klines:', error);
       }
-      // Keep existing klines on error instead of clearing
     } finally {
       setLoading(false);
     }

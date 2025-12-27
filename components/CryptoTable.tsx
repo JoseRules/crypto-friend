@@ -23,7 +23,6 @@ export default function CryptoTable({ data }: CryptoTableProps) {
   const [sortColumn, setSortColumn] = useState<SortColumn>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
-  // Filter by name or symbol
   const filteredData = useMemo(() => {
     return data.filter((item) => {
       if (!searchTerm) return true;
@@ -84,7 +83,6 @@ export default function CryptoTable({ data }: CryptoTableProps) {
     setCurrentPage(1);
   };
 
-  // Reset to page 1 when search changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
@@ -180,7 +178,7 @@ export default function CryptoTable({ data }: CryptoTableProps) {
                     onClick={() => router.push(`/crypto/${symbol}`)}
                     className="border-b border-foreground/20 hover:bg-foreground/10 transition-colors cursor-pointer"
                   >
-                    {/* Desktop: Name Columns */}
+                    {/* Desktop Columns */}
                     <td className="hidden sm:table-cell py-4 px-4">
                       <div className="flex items-center gap-3">
                         <Image
@@ -218,7 +216,7 @@ export default function CryptoTable({ data }: CryptoTableProps) {
                       </span>
                     </td>
 
-                    {/* Mobile: Columns */}
+                    {/* Mobile Columns */}
                     <td className="table-cell sm:hidden py-2.5 px-2">
                       <div className="flex items-center gap-1.5">
                         <Image
