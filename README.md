@@ -24,10 +24,7 @@
 - [Installation](#-installation)
 - [Usage](#-usage)
 - [Tech Stack](#-tech-stack)
-- [Project Structure](#-project-structure)
-- [API Routes](#-api-routes)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [Dev Explanation](#-dev-explanation)
 
 ---
 
