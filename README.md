@@ -12,8 +12,6 @@
 
 *Make better investment and trading decisions with real-time cryptocurrency data*
 
-[Features](#-features) • [Demo](#-demo) • [Installation](#-installation) • [Usage](#-usage) • [Tech Stack](#-tech-stack)
-
 </div>
 
 ---
@@ -26,10 +24,7 @@
 - [Installation](#-installation)
 - [Usage](#-usage)
 - [Tech Stack](#-tech-stack)
-- [Project Structure](#-project-structure)
-- [API Routes](#-api-routes)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [Dev Explanation](#-dev-explanation)
 
 ---
 
@@ -88,17 +83,14 @@
 
 ### Screenshots
 
-> **Note:** Add your screenshots here. You can create a `docs/images/` folder and reference them like:
-> 
-> ```markdown
-> ![Home Page](docs/images/home.png)
-> ![Crypto Table](docs/images/table.png)
-> ![Coin Details](docs/images/coin-detail.png)
-> ```
+![Home Page](docs/images/home.png)
+![Crypto Table](docs/images/table.png)
+![Coin Details](docs/images/coin-detail.png)
+
 
 ### Live Demo
 
-🚀 [Deploy your app and add the live demo link here]
+🚀 - [https://crypto-friend-five.vercel.app/](https://crypto-friend-five.vercel.app/)
 
 ---
 
@@ -107,7 +99,7 @@
 ### Prerequisites
 
 - **Node.js** 18.17 or later
-- **npm**, **yarn**, **pnpm**, or **bun**
+- **npm**
 
 ### Step 1: Clone the Repository
 
@@ -120,58 +112,17 @@ cd crypto-friend
 
 ```bash
 npm install
-# or
-yarn install
-# or
-pnpm install
-# or
-bun install
 ```
 
 ### Step 3: Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 ### Step 4: Open in Browser
 
 Open [http://localhost:3000](http://localhost:3000) to see the application.
-
----
-
-## 💻 Usage
-
-### Development
-
-```bash
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
-
-# Run linter
-npm run lint
-```
-
-### Environment Variables
-
-Currently, the app uses public CoinGecko API endpoints. If you need to add API keys in the future, create a `.env.local` file:
-
-```env
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
-# Add other environment variables as needed
-```
 
 ---
 
@@ -189,155 +140,53 @@ NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ### APIs
 - **[CoinGecko API](https://www.coingecko.com/en/api)** - Cryptocurrency market data
 
-### Development Tools
-- **ESLint** - Code linting
-- **PostCSS** - CSS processing
-
 ---
 
-## 📁 Project Structure
+## 📋 Dev Explanation
 
-```
-crypto-friend/
-├── app/                      # Next.js App Router pages
-│   ├── api/                  # API routes
-│   │   └── crypto/
-│   │       ├── markets/      # Markets endpoint
-│   │       └── [symbol]/     # Coin details & klines
-│   ├── crypto/               # Crypto pages
-│   │   ├── [symbol]/         # Dynamic coin detail page
-│   │   └── page.tsx          # Main crypto list page
-│   ├── about/                # About page
-│   ├── contact/              # Contact page
-│   ├── layout.tsx            # Root layout
-│   ├── page.tsx              # Home page
-│   └── globals.css           # Global styles
-├── components/               # React components
-│   ├── CryptoTable.tsx       # Main crypto table
-│   ├── PriceChart.tsx        # Chart component
-│   ├── ChartWithIntervals.tsx # Chart with time controls
-│   ├── Header.tsx            # Navigation header
-│   └── Footer.tsx            # Footer component
-├── assets/                   # Static assets
-│   └── icons/                # SVG icon components
-├── contexts/                 # React contexts
-│   └── ThemeContext.tsx      # Theme management
-├── types/                    # TypeScript types
-│   ├── coin.ts               # Coin type definitions
-│   └── ui.ts                 # UI type definitions
-├── utils/                    # Utility functions
-│   ├── coingecko.ts          # CoinGecko API helpers
-│   └── format.ts             # Formatting utilities
-└── public/                   # Public static files
-```
+## Explanation:
+- There is an API Route to get the details for the chart (/api/crypto/[symbol]/klines/route.ts) which is being used by component ChartWithIntervals
+The rest of the API calls are being done directly by Server Components
 
----
+- I have the following folders as well
+about: to have about route (accessible from footer)
+contact: to have contact route (accessible from footer)
+crypto: to access table (/crypto) and coin details (/crypto/[symbol])
+assets: to have items for UI (so far only SVG icons)
+components: to have miscellaneous components
+contexts: to keep context for state management (so far only with Theme Context)
+types/ui: to keep types used across different components
+utils: to keep general functions used across different components
 
-## 🔌 API Routes
+- Chart: There is a line chart built with recharts library, I chose it because it is React first, really simple and friendly library and it is really efficient.
+- State: I only used it for theme with React Context API since it is a small load of information being handled, the records for the crypto coins is cached and refreshed every minute
+- CoinGecko API is being used since Binance API was returning 451 code
 
-The application uses Next.js API routes to fetch cryptocurrency data:
 
-### `/api/crypto/markets`
-- **Method:** GET
-- **Description:** Returns list of top 150 cryptocurrencies
-- **Response:** Array of `Coin` objects
+## AI Usage
+- Dummy data: used to create about and contact pages, svg icon creation
+- Investigation: Investigation with Binance 451 code issue
+- Suggestions: Asking suggestions about coloring, styles and information
 
-### `/api/crypto/[symbol]`
-- **Method:** GET
-- **Description:** Returns detailed information for a specific coin
-- **Parameters:** `symbol` (e.g., "BTC", "ETH")
-- **Response:** `CoinDetail` object
+## Design decisions
+- I wanted to be super easy and simple to use, as if it was for someone that have never seen a crypto coins app
+- For the table page I added just the table with the most important details and the filter/search bar
+- For the details page I was based in Binance API, but I made it simpler by adding just the vital elements and the nav buttons for the chart, so the user could see the behaviour of the coin in the market.
 
-### `/api/crypto/[symbol]/klines`
-- **Method:** GET
-- **Description:** Returns historical price data (klines) for charting
-- **Parameters:** 
-  - `symbol` - Coin symbol
-  - `days` (query param) - Number of days (1, 7, 30, 90, 365)
-- **Response:** Array of `KlineData` tuples
+## Challenges & Trade-offs:
+I had an issue with Binance API, I was getting a 451 code, I researched and it looks it is an issue with request coming from vercel domain, so I decided to use Coin Gecko
+I also had an issue with this new API, once getting the records and filtering out it looks like I was getting duplicated elements, but it was because the Coin Gecko returns some coins with the same symbol, so I just added a conditional right after getting the records.
 
----
-
-## 📊 Data Flow
-
-```mermaid
-graph LR
-    A[User] --> B[Next.js App Router]
-    B --> C[API Routes]
-    C --> D[CoinGecko API]
-    D --> C
-    C --> B
-    B --> E[React Components]
-    E --> A
-```
-
----
-
-## 🎨 Theme System
-
-Crypto Friend supports both light and dark themes:
-
-- **Light Theme:** Clean, bright interface with blue accents
-- **Dark Theme:** Easy on the eyes with orange/red accents
-- **Auto-detection:** Respects system preferences
-- **Manual Toggle:** Theme switcher in header
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Development Guidelines
-
-- Follow TypeScript best practices
-- Use Tailwind CSS for styling
-- Ensure responsive design
-- Add proper error handling
-- Write clear commit messages
-
----
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- [CoinGecko](https://www.coingecko.com/) for providing free cryptocurrency API
-- [Next.js](https://nextjs.org/) team for the amazing framework
-- [Recharts](https://recharts.org/) for the charting library
-- All contributors and users of this project
-
----
-
-## 📈 Project Statistics
-
-```
-📦 Dependencies: 5 main packages
-📄 Components: 10+ React components
-🎨 Icons: 10+ custom SVG icons
-📱 Pages: 4 main pages + dynamic routes
-🔌 API Routes: 3 endpoints
-⚡ Performance: Optimized with ISR (60s revalidation)
-```
-
+## Opportunity Areas:
+If I have more time I would:
+- Add conversion calculation capabilities
+- Add accessibility labels
+- Add a quiz to know the expectations of the user and being able to suggest best coins to invest in.
+- Link it to an AI to process information obtained for it to suggest a good investment portfolio.
+- Add unit testing to ensure quality
 ---
 
 <div align="center">
 
 **Made with ❤️ using Next.js and React**
-
-⭐ Star this repo if you find it helpful!
-
-[Report Bug](https://github.com/yourusername/crypto-friend/issues) • [Request Feature](https://github.com/yourusername/crypto-friend/issues) • [Documentation](https://github.com/yourusername/crypto-friend/wiki)
-
 </div>

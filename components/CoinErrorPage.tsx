@@ -16,7 +16,6 @@ export default function CoinErrorPage({ baseSymbol, error }: CoinErrorPageProps)
   return (
     <div className="min-h-screen bg-background">
       <section className="flex flex-col items-center justify-center p-4 sm:p-8 max-w-6xl mx-auto">
-        {/* Back button */}
         <Link 
           href="/crypto"
           className="text-accent hover:text-accent/80 transition-colors mb-4 sm:mb-6 inline-flex items-center gap-2 text-sm sm:text-base self-start"
@@ -25,7 +24,6 @@ export default function CoinErrorPage({ baseSymbol, error }: CoinErrorPageProps)
          Back to Crypto List
         </Link>
 
-        {/* Error Card */}
         <div className="w-full bg-foreground rounded-lg p-6 sm:p-8 flex flex-col items-center justify-center text-center">
           <div className="mb-6">
             <Alert className="w-16 h-16 sm:w-20 sm:h-20 text-danger mx-auto" />

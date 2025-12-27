@@ -27,8 +27,8 @@ export async function GET(
     const res = await fetch(
       `https://api.coingecko.com/api/v3/coins/${coinGeckoId}/market_chart?vs_currency=usd&days=${days}`,
       { 
-        next: { revalidate: 60 },
-        signal: AbortSignal.timeout(15000) // 15 second timeout for chart data
+        next: { revalidate: 300 },
+        signal: AbortSignal.timeout(15000)
       }
     );
 
@@ -101,7 +101,6 @@ export async function GET(
 
     return NextResponse.json(klines);
   } catch (error) {
-    // Handle different error types gracefully
     if (error instanceof Error) {
       if (error.name === 'AbortError' || error.name === 'TimeoutError') {
         console.error(`Request timeout while fetching klines for ${baseSymbol}`);

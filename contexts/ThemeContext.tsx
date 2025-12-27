@@ -24,7 +24,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const root = document.documentElement;
-    // Always set an explicit data-theme to avoid prefers-color-scheme overriding
     root.setAttribute('data-theme', theme);
     try {
       localStorage.setItem('theme', theme);

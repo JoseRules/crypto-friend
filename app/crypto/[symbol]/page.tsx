@@ -5,6 +5,7 @@ import CoinErrorPage from "@/components/CoinErrorPage";
 import ArrowLeft from "@/assets/icons/ArrowLeft";
 import { CoinDetail, KlineData } from "@/types/ui";
 import { getCoinGeckoIdFromSymbol, getCoinGeckoId } from '@/utils/coingecko';
+import { formatPrice, formatVolume } from '@/utils/format';
 
 export async function getCoinDetail(baseSymbol: string) {
   try {
@@ -18,12 +19,11 @@ export async function getCoinDetail(baseSymbol: string) {
       throw new Error('COIN_NOT_FOUND');
     }
 
-    // Call CoinGecko directly from server component
     const res = await fetch(
       `https://api.coingecko.com/api/v3/coins/${coinGeckoId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`,
       { 
         next: { revalidate: 60 },
-        signal: AbortSignal.timeout(10000) // 10 second timeout
+        signal: AbortSignal.timeout(10000)
       }
     );
 
@@ -90,7 +90,6 @@ export async function getKlines(
   days: number = 1
 ): Promise<KlineData[]> {
   try {
-    // Get CoinGecko ID from symbol
     let coinGeckoId = getCoinGeckoIdFromSymbol(baseSymbol);
     if (!coinGeckoId) {
       coinGeckoId = await getCoinGeckoId(baseSymbol);
@@ -100,12 +99,11 @@ export async function getKlines(
       throw new Error('COIN_NOT_FOUND');
     }
 
-    // Call CoinGecko directly from server component
     const res = await fetch(
       `https://api.coingecko.com/api/v3/coins/${coinGeckoId}/market_chart?vs_currency=usd&days=${days}`,
       { 
         next: { revalidate: 60 },
-        signal: AbortSignal.timeout(15000) // 15 second timeout for chart data
+        signal: AbortSignal.timeout(15000)
       }
     );
 
@@ -135,9 +133,6 @@ export async function getKlines(
     }
     const prices = data.prices || [];
 
-    // Convert CoinGecko format to our KlineData format
-    // CoinGecko: [[timestamp, price], ...]
-    // Our format: [openTime, open, high, low, close, volume, closeTime, ...]
     const klines: KlineData[] = prices.map((price: [number, number], index: number) => {
       const [timestamp, priceValue] = price;
       const nextPrice = prices[index + 1]?.[1] || priceValue;
@@ -184,24 +179,8 @@ export default async function CryptoSymbol({ params }: { params: { symbol: strin
     klines = await getKlines(baseSymbol, 1);
   } catch (err) {
     error = err instanceof Error ? err : new Error('Unknown error');
-    // Return error UI
     return <CoinErrorPage baseSymbol={baseSymbol} error={error} />;
   }
-  const formatPrice = (price: string) => {
-    const num = parseFloat(price);
-    return num.toLocaleString('en-US', { 
-      minimumFractionDigits: 2, 
-      maximumFractionDigits: 8 
-    });
-  };
-
-  const formatVolume = (volume: string) => {
-    const num = parseFloat(volume);
-    if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
-    if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
-    if (num >= 1e3) return `$${(num / 1e3).toFixed(2)}K`;
-    return `$${num.toFixed(2)}`;
-  };
 
   const priceChange = parseFloat(coin.priceChangePercent);
   const isPositive = priceChange >= 0;
@@ -210,7 +189,6 @@ export default async function CryptoSymbol({ params }: { params: { symbol: strin
   return (
     <div className="min-h-screen bg-background">
       <section className="flex flex-col p-4 sm:p-8 max-w-6xl mx-auto">
-        {/* Back button */}
         <Link 
           href="/crypto"
           className="text-accent hover:text-accent/80 transition-colors mb-4 sm:mb-6 inline-flex items-center gap-2 text-sm sm:text-base"
@@ -259,7 +237,6 @@ export default async function CryptoSymbol({ params }: { params: { symbol: strin
 
         {/* Statistics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {/* Price Statistics */}
           <div className="bg-foreground rounded-lg p-4 sm:p-5">
             <h3 className="text-primary font-semibold text-sm sm:text-base mb-3">Price Statistics</h3>
             <div className="space-y-3">

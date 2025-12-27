@@ -3,13 +3,11 @@ import { Coin } from '@/types/ui';
 
 async function getStaticData() {
   try {
-    // Call CoinGecko directly from server component - more reliable than internal API routes
     const res = await fetch(
       'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=150&page=1&sparkline=false',
       { 
         next: { revalidate: 60 },
-        // Add timeout and better error handling
-        signal: AbortSignal.timeout(10000) // 10 second timeout
+        signal: AbortSignal.timeout(10000)
       }
     );
 
@@ -37,7 +35,7 @@ async function getStaticData() {
       return [];
     }
 
-    // Map CoinGecko data to our Coin structure
+    // Map CoinGecko
     const mappedData = data.map((coin: any): Coin => ({
       symbol: coin.symbol.toUpperCase(),
       name: coin.name,
@@ -48,7 +46,7 @@ async function getStaticData() {
       image: coin.image,
     }));
 
-    // Remove duplicates by symbol
+    // Remove duplicates
     const seenSymbols = new Set<string>();
     const uniqueData = mappedData.filter((coin: Coin) => {
       if (seenSymbols.has(coin.symbol)) {
@@ -60,7 +58,6 @@ async function getStaticData() {
 
     return uniqueData;
   } catch (error) {
-    // Handle different error types gracefully
     if (error instanceof Error) {
       if (error.name === 'AbortError' || error.name === 'TimeoutError') {
         console.error('Request timeout while fetching crypto data from CoinGecko');
