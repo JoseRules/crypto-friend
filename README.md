@@ -188,9 +188,4 @@ If I have more time I would:
 <div align="center">
 
 **Made with ❤️ using Next.js and React**
-
-⭐ Star this repo if you find it helpful!
-
-[Report Bug](https://github.com/yourusername/crypto-friend/issues) • [Request Feature](https://github.com/yourusername/crypto-friend/issues) • [Documentation](https://github.com/yourusername/crypto-friend/wiki)
-
 </div>
