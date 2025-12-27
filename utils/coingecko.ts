@@ -2,21 +2,55 @@ export async function getCoinGeckoId(symbol: string): Promise<string | null> {
   try {
     const coinListRes = await fetch(
       'https://api.coingecko.com/api/v3/coins/list',
-      { next: { revalidate: 3600 } }
+      { 
+        next: { revalidate: 3600 },
+        signal: AbortSignal.timeout(10000) // 10 second timeout
+      }
     );
     
-    if (!coinListRes.ok) return null;
+    if (!coinListRes.ok) {
+      const errorText = await coinListRes.text().catch(() => 'Unknown error');
+      console.error(`Failed to fetch coin list from CoinGecko: ${coinListRes.status} ${coinListRes.statusText}`, {
+        status: coinListRes.status,
+        statusText: coinListRes.statusText,
+        error: errorText
+      });
+      return null;
+    }
     
-    const coinList = await coinListRes.json();
+    let coinList;
+    try {
+      coinList = await coinListRes.json();
+    } catch (jsonError) {
+      console.error('Failed to parse coin list JSON response:', jsonError);
+      return null;
+    }
+    
+    // Validate data structure
+    if (!Array.isArray(coinList)) {
+      console.error('Invalid coin list format: expected array, got', typeof coinList);
+      return null;
+    }
+    
     const symbolLower = symbol.toLowerCase();
-    
     const coin = coinList.find((c: any) => 
       c.symbol.toLowerCase() === symbolLower
     );
     
     return coin?.id || null;
   } catch (error) {
-    console.error('Error fetching CoinGecko ID:', error);
+    // Handle different error types gracefully
+    if (error instanceof Error) {
+      if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+        console.error(`Request timeout while fetching CoinGecko ID for ${symbol}`);
+      } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        console.error(`Network error fetching CoinGecko ID for ${symbol}:`, error.message);
+      } else {
+        console.error(`Error fetching CoinGecko ID for ${symbol}:`, error.message, error);
+      }
+    } else {
+      console.error(`Unknown error fetching CoinGecko ID for ${symbol}:`, error);
+    }
     return null;
   }
 }

@@ -21,17 +21,35 @@ export async function getCoinDetail(baseSymbol: string) {
     // Call CoinGecko directly from server component
     const res = await fetch(
       `https://api.coingecko.com/api/v3/coins/${coinGeckoId}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false&sparkline=false`,
-      { next: { revalidate: 60 } }
+      { 
+        next: { revalidate: 60 },
+        signal: AbortSignal.timeout(10000) // 10 second timeout
+      }
     );
 
     if (!res.ok) {
+      const errorText = await res.text().catch(() => 'Unknown error');
+      console.error(`Failed to fetch coin detail for ${baseSymbol} (${coinGeckoId}): ${res.status} ${res.statusText}`, {
+        symbol: baseSymbol,
+        coinGeckoId,
+        status: res.status,
+        statusText: res.statusText,
+        error: errorText
+      });
+      
       if (res.status === 404) {
         throw new Error('COIN_NOT_FOUND');
       }
       throw new Error('NETWORK_ERROR');
     }
 
-    const coinGeckoData = await res.json();
+    let coinGeckoData;
+    try {
+      coinGeckoData = await res.json();
+    } catch (jsonError) {
+      console.error(`Failed to parse JSON response for ${baseSymbol}:`, jsonError);
+      throw new Error('NETWORK_ERROR');
+    }
     const marketData = coinGeckoData.market_data;
 
     // Map CoinGecko data to our CoinDetail structure
@@ -85,17 +103,36 @@ export async function getKlines(
     // Call CoinGecko directly from server component
     const res = await fetch(
       `https://api.coingecko.com/api/v3/coins/${coinGeckoId}/market_chart?vs_currency=usd&days=${days}`,
-      { next: { revalidate: 60 } }
+      { 
+        next: { revalidate: 60 },
+        signal: AbortSignal.timeout(15000) // 15 second timeout for chart data
+      }
     );
 
     if (!res.ok) {
+      const errorText = await res.text().catch(() => 'Unknown error');
+      console.error(`Failed to fetch klines for ${baseSymbol} (${coinGeckoId}): ${res.status} ${res.statusText}`, {
+        symbol: baseSymbol,
+        coinGeckoId,
+        days,
+        status: res.status,
+        statusText: res.statusText,
+        error: errorText
+      });
+      
       if (res.status === 404) {
         throw new Error('COIN_NOT_FOUND');
       }
       throw new Error('NETWORK_ERROR');
     }
 
-    const data = await res.json();
+    let data;
+    try {
+      data = await res.json();
+    } catch (jsonError) {
+      console.error(`Failed to parse JSON response for klines (${baseSymbol}):`, jsonError);
+      throw new Error('NETWORK_ERROR');
+    }
     const prices = data.prices || [];
 
     // Convert CoinGecko format to our KlineData format

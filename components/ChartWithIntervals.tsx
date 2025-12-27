@@ -69,16 +69,55 @@ export default function ChartWithIntervals({
       const config = INTERVALS[intervalKey];
       const days = parseInt(config.interval);
       
+      // Add timeout for client-side fetch
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      
       const res = await fetch(
-        `/api/crypto/${baseSymbol}/klines?days=${days}`
+        `/api/crypto/${baseSymbol}/klines?days=${days}`,
+        { signal: controller.signal }
       );
       
-      if (!res.ok) throw new Error('Failed to fetch klines');
+      clearTimeout(timeoutId);
       
-      const convertedKlines: KlineData[] = await res.json();
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `Failed to fetch klines: ${res.status} ${res.statusText}`
+        );
+      }
+      
+      let convertedKlines: KlineData[];
+      try {
+        convertedKlines = await res.json();
+      } catch (jsonError) {
+        console.error('Failed to parse klines JSON response:', jsonError);
+        throw new Error('Invalid response format from server');
+      }
+      
+      // Validate data structure
+      if (!Array.isArray(convertedKlines) || convertedKlines.length === 0) {
+        console.warn(`No klines data received for ${baseSymbol} (${config.label})`);
+        // Keep existing klines instead of clearing
+        return;
+      }
+      
       setKlines(convertedKlines);
     } catch (error) {
-      console.error('Error fetching klines:', error);
+      // Handle different error types gracefully
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          console.error(`Request timeout while fetching klines for ${baseSymbol}`);
+          // Show user-friendly message - could add toast notification here
+        } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+          console.error(`Network error fetching klines for ${baseSymbol}:`, error.message);
+        } else {
+          console.error(`Error fetching klines for ${baseSymbol}:`, error.message);
+        }
+      } else {
+        console.error('Unknown error fetching klines:', error);
+      }
+      // Keep existing klines on error instead of clearing
     } finally {
       setLoading(false);
     }
